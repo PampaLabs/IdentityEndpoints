@@ -1,0 +1,38 @@
+﻿@page "/Iam/Roles"
+
+@using IdentityManager.Data
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.AspNetCore.Identity
+
+@inject RoleManager<ApplicationRole> RoleManager
+
+<PageTitle>Roles</PageTitle>
+
+<h1>Roles</h1>
+
+<a href="/Iam/Roles/Create" class="btn btn-primary">
+    <i class="fa fa-solid fa-plus"></i> Create New
+</a>
+
+<QuickGrid Class="table" Items="RoleManager.Roles" Pagination="@pagination">
+    <PropertyColumn Property="role => role.Name" Title="Name" />
+
+    <TemplateColumn Context="role">
+        <div class="actions">
+            <a href="@($"/Iam/Roles/{role.Id}")">
+                <i class="fa fa-solid fa-eye"></i>
+            </a>
+            <a href="@($"/Iam/Roles/{role.Id}/Edit")">
+                <i class="fa fa-solid fa-pencil"></i>
+            </a>
+            <a href="@($"/Iam/Roles/{role.Id}/Delete")">
+                <i class="fa fa-solid fa-trash-can"></i>
+            </a>
+        </div>
+    </TemplateColumn>
+</QuickGrid>
+<Paginator State="@pagination"></Paginator>
+
+@code {
+    PaginationState pagination = new PaginationState { ItemsPerPage = 20 };
+}

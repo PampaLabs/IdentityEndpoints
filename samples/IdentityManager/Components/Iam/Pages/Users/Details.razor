@@ -1,0 +1,95 @@
+﻿@page "/Iam/Users/{id}"
+@rendermode InteractiveServer
+
+@using IdentityManager.Components.Shared
+@using Microsoft.AspNetCore.Identity
+@using IdentityManager.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<ApplicationRole> RoleManager
+
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>User</h4>
+    <hr />
+    @if (user is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+
+        <TabSet>
+            <Tab Title="Details">
+                <dl class="row">
+                    <dt class="col-sm-2">Username</dt>
+                    <dd class="col-sm-10">@user.UserName</dd>
+
+                    <dt class="col-sm-2">Email</dt>
+                    <dd class="col-sm-10">@user.Email</dd>
+
+                    <dt class="col-sm-2">Lockout enabled</dt>
+                    <dd class="col-sm-10 form-check form-switch">
+                        <InputCheckbox @bind-Value="user.LockoutEnabled" class="form-check-input" role="switch" disabled />
+                    </dd>
+
+                    @if (@user.LockoutEnabled)
+                    {
+                        <dt class="col-sm-2">Lockout end</dt>
+                        <dd class="col-sm-10">@(user.LockoutEnd.HasValue ? user.LockoutEnd.Value.Date.ToShortDateString() : "-")</dd>
+                    }
+
+                    <dt class="col-sm-2">Two factor enabled</dt>
+                    <dd class="col-sm-10 form-check form-switch">
+                        <InputCheckbox @bind-Value="user.TwoFactorEnabled" class="form-check-input" role="switch" disabled />
+                    </dd>
+                </dl>
+            </Tab>
+            <Tab Title="Roles">
+                <DualListBox TItem="string"
+                             LeftItems="@availableRoles" LeftText="Available"
+                             RightItems="@assignedRoles" RightText="Assigned"
+                             Name="@(item => item)"
+                             Value="@(item => item)">
+                </DualListBox>
+            </Tab>
+        </TabSet>
+
+        <div>
+            <a href="@($"/Iam/Users/{Id}/Edit")">Edit</a> |
+            <a href="@($"/Iam/Users")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    ApplicationUser? user;
+
+    [Parameter]
+    public string Id { get; set; }
+
+    IList<string> roles;
+
+    IList<string> availableRoles;
+    IList<string> assignedRoles;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserManager.FindByIdAsync(Id);
+
+        if (user is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+
+        roles = RoleManager.Roles.Select(x => x.Name).ToList()!;
+
+        assignedRoles = await UserManager.GetRolesAsync(user);
+        availableRoles = roles.Except(assignedRoles).ToArray();
+    }
+}

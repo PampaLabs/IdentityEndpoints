@@ -1,0 +1,110 @@
+﻿@page "/Iam/Users/Create"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using IdentityManager.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>User</h4>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <EditForm method="post" Model="Input" OnValidSubmit="AddUser" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <div class="form-floating mb-3">
+                <InputText id="username" @bind-Value="Input.UserName" class="form-control" placeholder="Please enter the username." />
+                <label for="username" class="form-label">Username</label>
+                <ValidationMessage For="() => Input.UserName" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputText id="email" @bind-Value="Input.Email" class="form-control" placeholder="Please enter the email." />
+                <label for="email" class="form-label">Email</label>
+                <ValidationMessage For="() => Input.Email" class="text-danger" />
+            </div>
+
+            <div class="form-check form-switch mb-3">
+                <InputCheckbox id="lockoutenabled" @bind-Value="Input.LockoutEnabled" class="form-check-input" role="switch" />
+                <label for="lockoutenabled" class="form-label">Lockout enabled</label>
+                <ValidationMessage For="() => Input.LockoutEnabled" class="text-danger" />
+            </div>
+
+            @if (Input.LockoutEnabled)
+            {
+                <div class="form-floating mb-3">
+                    <InputDate id="lockoutend" @bind-Value="Input.LockoutEnd" class="form-control" placeholder="Please enter the lockout end." />
+                    <label for="lockoutend" class="form-label">Lockout end</label>
+                    <ValidationMessage For="() => Input.LockoutEnd" class="text-danger" />
+                </div>
+            }
+
+            <div class="form-check form-switch mb-3">
+                <InputCheckbox id="twofactorenabled" @bind-Value="Input.TwoFactorEnabled" class="form-check-input" role="switch" />
+                <label for="twofactorenabled" class="form-label">Two factor enabled</label>
+                <ValidationMessage For="() => Input.TwoFactorEnabled" class="text-danger" />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/Iam/Users">Back to List</a>
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddUser()
+    {
+        var user = new ApplicationUser
+            {
+                UserName = Input.UserName,
+                Email = Input.Email,
+                LockoutEnabled = Input.LockoutEnabled,
+                LockoutEnd = Input.LockoutEnd,
+                TwoFactorEnabled = Input.TwoFactorEnabled,
+            };
+
+        var result = await UserManager.CreateAsync(user);
+
+        if (result.Succeeded)
+        {
+            NavigationManager.NavigateTo("/Iam/Users");
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [Display(Name = "UserName")]
+        public string? UserName { get; set; }
+
+        [Required]
+        [Display(Name = "Email")]
+        public string? Email { get; set; }
+
+        [Required]
+        [Display(Name = "Lockout enabled")]
+        public bool LockoutEnabled { get; set; }
+
+        // [Required]
+        [Display(Name = "LockoutEnd")]
+        public DateTimeOffset? LockoutEnd { get; set; }
+
+        [Required]
+        [Display(Name = "Two factor enabled")]
+        public bool TwoFactorEnabled { get; set; }
+    }
+}
